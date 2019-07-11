@@ -100,10 +100,14 @@ open class KeyboardTrackingView: UIView {
     private func show(change: Change, _ notification: Notification) {
         guard !(isPaused || isAutomaticallyPaused),
             let userInfo = (notification as NSNotification).userInfo,
-            let value = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
-        let keyboardRect = value.cgRectValue
-        let thisRect = convert(bounds, to: nil)
-        let newHeight = max(0, thisRect.maxY - keyboardRect.minY) + topMargin
+            let value = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+            let window = window
+        else {
+            return
+        }
+        let keyboardTop = value.cgRectValue.minY
+        let kbdTrackingViewBottom = min(convert(bounds, to: nil).maxY, window.bounds.maxY)     //Prevent the tracking view bottom from extending below the window
+        let newHeight = max(0, kbdTrackingViewBottom - keyboardTop) + topMargin
         guard heightConstraint.constant != newHeight else { return }
         delegate?.keyboardTrackingViewWillChange(change: change, userInfo: userInfo)
         animateKeyboardChange(change: change, height: newHeight, userInfo: userInfo)
